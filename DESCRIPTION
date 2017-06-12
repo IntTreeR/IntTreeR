@@ -1,0 +1,17 @@
+Package: IntTreeR
+Title: Build classification trees in an interactive way
+Version: 1.0
+Authors@R: as.person(c(
+    "Florian Matthies <inttreer@gmx.de> [aut, cre]", 
+    "Tobias Anell <inttreer@gmx.de> [aut]",
+    "Jens Michels <inttreer@gmx.de> [aut]"
+  ))
+Maintainer@R: person("Hochschule", "Trier", email = "inttreer@gmx.de",
+  role = c("aut", "cre"))
+Description:  Build classification trees in an interactive way. The algorithm mostly follows the CART algorithm by Leo Breiman et. al. (1984). Visualizing of the trees via Partykit (Toolkit for Recursive Partytioning).
+Depends: R (>= 3.1.0)
+Imports: partykit (>= 1.1)
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
