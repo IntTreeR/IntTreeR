@@ -6,7 +6,7 @@
 #' @param split.point (integer) non-negative numeric; Node ID of terminal node where you want to perform your split.
 #' @param split.featurecharacter or string; Column name of the attribute which should be used for the split.
 #' @param max.surrogates(Optional) (Integer) non-negative; the maximum number of surrogates, which will be calculated for the split. (Default is 3)
-#' @param custom.split(Optional) (Integer) custom point to split (only for numeric attributes)	
+#' @param custom.split(Optional) (Numeric) custom point to split (only for numeric attributes)	
 #' @details Missing values are handled via Surrogate Splits. In most details, it follows „Leo Breiman et. al. (1984). “quite closely.
 #'
 #' @export
@@ -104,8 +104,27 @@ splitTree <- function(tree.obj, split.point, split.feature, max.surrogates, cust
 	# Wenn eine explizite Partitionierung uebergeben wird, dann wird diese genommen
 	# ansonsten wird die beste berechnete Partition genommen (gelassen).
 	if (!is.null(custom.split)) {
-		tree.obj[[split.point]]$partitions[[split.col]]$left = 	custom.split
-		tree.obj[[split.point]]$partitions[[split.col]]$right = custom.split
+	
+		# temporaere listen fuer linke und rechte partitionierung
+		temp.list_l = tree.obj[[split.point]]$partitions[[split.col]]$left
+		temp.list_r = tree.obj[[split.point]]$partitions[[split.col]]$right
+		temp.list = temp.list_l
+		temp.list = append(temp.list, temp.list_r)
+		
+		# neue Partitionierung entsprechend des custom.split erstellen
+		list_l = temp.list[temp.list <= custom.split]
+		list_r = temp.list[temp.list > custom.split]
+		
+		# alte Partitionierung durch neue ersetzen und custom.split 
+		# an letzter Stelle bzw. an erster Stelle anhaengen 
+		tree.obj[[split.point]]$partitions[[split.col]]$left = 	append(list_l, custom.split)
+		tree.obj[[split.point]]$partitions[[split.col]]$right = append(list_r, custom.split, after = 0)
+		
+		# temporare Objekte zerstoeren
+		rm(temp.list_l)
+		rm(temp.list_r)
+		rm(list_l)
+		rm(list_r)
 	} 
 	
   # Am splitpoint des Baum Objektes, wird mapsplit aufgerufen, die aus den Parametern einen
@@ -118,13 +137,16 @@ splitTree <- function(tree.obj, split.point, split.feature, max.surrogates, cust
                 	                              complement = 0)
  
   # ---------------------------------------------------------------------
+	
 
+		
   # Jetzt werden fuer den gewaehlten Split Point alle Surrogate Trenner bestimmt
   surrogate.splits.obj <- calcSurrogateSplit(v.mvattribute = split.feature,
                                                   v.target = tree.obj[[1]]$target,
                                              df.attributes = tree.obj[[split.point]]$data,
                                               l.partitions = tree.obj[[split.point]]$partitions)
 
+	
 
   # ---------------------------------------------------------------------
   # Berechnung der Wahrscheinlichkeit fuer Majoritaet(Mehrheit)
@@ -203,6 +225,8 @@ splitTree <- function(tree.obj, split.point, split.feature, max.surrogates, cust
   # Hinzufuegen der fertigen Liste der Surrogate Trenner an den aktuellen Splitpoint
   new.tree.obj[[split.point]]$surrogates <- l.surrogates
 
+
+	
 
   # Referenz der Children an den Splitpoint anfuegen
   new.tree.obj[[split.point]]$kids <- c((split.point + 1), (split.point + 2))
